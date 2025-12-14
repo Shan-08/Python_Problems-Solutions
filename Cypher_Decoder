@@ -1,0 +1,210 @@
+import re
+def removeMatches(myString, removeString):
+	newStr = ""
+	for ch in myString:
+		if ch not in removeString:
+			newStr = newStr + ch
+	return newStr
+
+#####get the letter frequency ##########################
+def letterFrequency(text):
+    text = text.lower()
+    nonLetters = removeMatches(text, 'abcdefghijklmnopqrstuvwxyz')
+    text = removeMatches(text, nonLetters)
+    lCount = {}
+    total = len(text)
+    for ch in text:    #count each letter’s occurrence
+        lCount[ch] = lCount.get(ch, 0) + 1
+    for ch in lCount:  #calculate percentages
+        lCount[ch] = lCount[ch] / total
+    return lCount
+
+with open ('cipherassignment.txt', 'r', encoding= 'utf-8') as assignmentthree:
+    text = assignmentthree.read()
+If = letterFrequency(text)
+for letter in 'abcdefghijklmnopqrstuvwxyz' :
+  print (letter, If.get(letter))
+
+#####get the percentage in decending order#############################
+
+def getFreq(t):
+     return t[1]
+
+lfList = list(If.items())
+lfList.sort(key = getFreq, reverse = True)
+for entry in lfList:
+    print("{0} {1:.3f}".format(entry[0], entry[1])) #mostly used 6 letters are 'gcsyjz'
+
+######find the neibouring counts######################################
+
+def maybeAdd(ch, toList):
+	if ch in 'abcdefghijklmnopqrstuvwxyz' and ch not in toList:
+		toList.append(ch) 
+
+def neighborCount(text):
+   nbDict = {}
+   text = text.lower()
+   for i in range(len(text) - 1):
+      nbList = nbDict.setdefault(text[i], [])
+      maybeAdd(text[i + 1], nbList)
+      nbList = nbDict.setdefault(text[i + 1], [])
+      maybeAdd(text[i], nbList)
+   for key in nbDict.keys(): #replace letters list with count
+      nbDict[key] = len(nbDict.get(key))
+   return nbDict
+
+freqDict = neighborCount(text)
+for i in 'gcsyjz':
+    print(i, freqDict[i])
+        
+#####find the neighboring characters###############################
+
+def maybeAdd(ch, toDict):
+	if ch in 'abcdefghijklmnopqrstuvwxyz':
+		toDict[ch] = toDict.setdefault(ch, 0) + 1
+
+def neighborCount(text):
+	nbDict = {}
+	text = text.lower()
+	for i in range(len(text) - 1):
+		nbList = nbDict.setdefault(text[i], {})
+		maybeAdd(text[i + 1], nbList)
+		nbList = nbDict.setdefault(text[i + 1], {})
+		maybeAdd(text[i], nbList)
+	return nbDict
+d = neighborCount(text)
+
+print (d['g'])
+print (d['c'])
+print (d['s'])
+print (d['y'])
+print (d['j'])
+print (d['z'])
+#make letter frequency in the ciphertext through histogram
+
+######sort cipherwords by length######################################
+
+cipherText = text
+def sortByLen(w):
+        return len(w)
+
+cipherWords = cipherText.split()
+cipherWords.sort(key = sortByLen)
+cipherWords
+
+######replacing the cipherletters with plain letters#################
+
+cipherText = text
+cipherText = cipherText.replace('j', 'A')    #common 3 word letter
+cipherText = cipherText.replace('y', 'N')
+cipherText = cipherText.replace('n', 'D')
+
+cipherText = cipherText.replace('g', 'T')    #common 3 word letter 
+cipherText = cipherText.replace('s', 'H')
+cipherText = cipherText.replace('c', 'E')
+
+cipherText = cipherText.replace('d', 'R') # 'THdEE' is THREE 
+cipherText = cipherText.replace('z', 'O')  # 'NzT' seems like NOT
+cipherText = cipherText.replace('l', 'F')  # 'lRUIT' and 'lOUR' are FRUIT and FOUR
+
+cipherText = cipherText.replace('t', 'I') #checkWord('d.d') *did
+cipherText = cipherText.replace('e', 'G') # gRENADE,  HIeH  *HIGH
+cipherText = cipherText.replace('q', 'Y') #checkWord ('tin.') *tiny
+cipherText = cipherText.replace('i', 'U')  #checkWord('tho.') *thou
+
+cipherText = cipherText.replace('h', 'C') #checkWord('.o.ntin.') *counting
+cipherText = cipherText.replace('w', 'L') #checkWord('[bcfjklmpqvwxz].ess') *less
+cipherText = cipherText.replace('o', 'B')   #checkWord('.ats') *oATS- bats , oEING
+cipherText = cipherText.replace('x', 'M')   #checkWord('nu..er') NUxoER- number
+
+cipherText = cipherText.replace('f', 'S') #'THIf' seems like THIS
+cipherText = cipherText.replace('m', 'W')  #checkWord('[cpqvwxz]ith')  #with
+
+cipherText = cipherText.replace('a', 'P')  #findLetters('GJKPQVXY', 'aROCEED') *proceed
+cipherText = cipherText.replace('k', 'V')  #findLetters('GJKPQVXY', 'FIkE') *five
+cipherText = cipherText.replace('v', 'K') #findLetters('GJKPQVXY', 'TAvE')  *take 
+cipherText = cipherText.replace('p', 'X')  #findLetters('GJKPQVXY', 'EpCEPTING') #excepting
+
+
+#####pattern matching by partial words##########################
+
+#regular expression matching
+re.match('TH.EE', 'THREE')  # d replaced by R 
+re.match('.OUR', 'FOUR')    #matches
+re.match('.RUIT', 'FRUIT')  # l replaced by F
+
+
+#matching words from the dictionary 
+def checkWord(regex):
+      resList = []
+      with open ('wordlist.txt', 'r') as wordFile:
+           for line in wordFile:
+                if re.match(regex, line[:-1]):
+                     resList.append(line[:-1])
+      return resList
+
+
+#using checkword to find matches 
+checkWord('tho[[bcfgijklmpqsuvwxyz]') #thou
+
+checkWord('.renade') #GRANADE, e for G
+
+checkWord('d.d') #did
+checkWord('d[bcfgijklmpqsuvwxyz]d')
+
+checkWord ('tin.') #tiny
+
+
+##matching words from the dictionary with unused letters
+def checkWord(unused, pattern):
+	resList = []
+	with open('wordlist.txt', 'r') as wordFile:
+		rePat = '['+unused+']'
+		regex = re.sub('[a-z]', rePat, pattern) + '$'
+		regex = regex.lower()
+		print('matching', regex)
+		for line in wordFile:
+			if re.match(regex, line[:-1]):
+				resList.append(line[:-1])
+	return resList
+
+checkWord('bcfgjklmpqsvwxz', 'NUxoER') #NUxoER- number
+checkWord ('bcfgjklmpqsvwxz', 'hOUNT') #count
+checkWord ('bcfgjklmpqsvwxz', 'hOUNTING')
+checkWord('bcfgjklmpqsvwxz', 'HOwY')  #holy
+
+checkWord('fgjkpqsvwxz', 'BATf') #bats
+checkWord('fgjkpqsvwxz', 'fHALT')
+checkWord('fgjkpqsvwxz', 'mITH')  #with
+checkWord('fgjkpqsvwxz', 'TmO')
+##
+#########find matches #######################################################
+
+def findLetters(unused, pattern):
+	resList = []
+	with open('wordlist.txt', 'r') as wordFile:
+		ctLetters = re.findall('[a-z]', pattern)
+		print(ctLetters)
+		rePat = '(['+unused+'])'
+		regex = re.sub('[a-z]', rePat, pattern) + '$'
+		regex = regex.lower()
+		for line in wordFile:
+			myMatch = re.match(regex, line[:-1])
+			if myMatch:
+				matchingLetters = myMatch.groups()
+				matchList = []
+				for l in matchingLetters:
+					matchList.append(l.upper())
+				resList.append(line[:-1])
+				resList.append(list(zip(ctLetters, matchList)))
+	return resList
+
+#find the ones not decrypted yet *GJKPQVXY##############################
+re.findall('[a-z]', cipherText)
+#compare the unmapped letter with the plain letters
+findLetters('GJKPQVXY', 'TAvE')  #take 
+findLetters('GJKPQVXY', 'FIkE') #five 
+findLetters('GJKPQVXY', 'aROCEED') #proceed
+findLetters('GJKPQVXY', 'EpCEPTING') #excepting
+
+
